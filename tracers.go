@@ -10,6 +10,7 @@ func logViolation(id Id, threshold Threshold, actual Actual, now Now, violationT
 	if id != nil {
 		idStr = string(id) + " "
 	}
+
 	log.Printf("%sviolation %s section took %s %d (threshold %s)", idStr, violationType.String(), time.Duration(actual).String(), actual, time.Duration(threshold).String())
 }
 
@@ -32,6 +33,7 @@ func (m *Mutex) EnableTracerWithOpts(o Opts) {
 		m.id = []byte(o.Id)
 	}
 	m.threshold.Store(uint64(o.Threshold.Nanoseconds()))
+	m.DisableViolationLog = o.DisableViolationLog
 }
 
 func (m *Mutex) DisableTracer() {
@@ -47,6 +49,7 @@ func (m *RWMutex) EnableTracerWithOpts(o Opts) {
 		m.id = []byte(o.Id)
 	}
 	m.threshold.Store(uint64(o.Threshold.Nanoseconds()))
+	m.DisableViolationLog = o.DisableViolationLog
 }
 
 func (m *RWMutex) DisableTracer() {

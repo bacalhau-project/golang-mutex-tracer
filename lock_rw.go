@@ -9,11 +9,12 @@ type RWMutex struct {
 	lock sync.RWMutex
 
 	// internal trace fields
-	threshold        atomic.Uint64 // 0 when disabled, else threshold in nanoseconds
-	beginAwaitLock   atomic.Uint64 // start time in unix nanoseconds from start waiting for lock
-	beginAwaitUnlock atomic.Uint64 // start time in unix nanoseconds from start waiting for unlock
-	lockObtained     atomic.Uint64 // once we've entered the lock in unix nanoseconds
-	id               []byte        // if set this will be printed as string
+	threshold           atomic.Uint64 // 0 when disabled, else threshold in nanoseconds
+	beginAwaitLock      atomic.Uint64 // start time in unix nanoseconds from start waiting for lock
+	beginAwaitUnlock    atomic.Uint64 // start time in unix nanoseconds from start waiting for unlock
+	lockObtained        atomic.Uint64 // once we've entered the lock in unix nanoseconds
+	id                  []byte        // if set this will be printed as string
+	DisableViolationLog bool
 }
 
 func (m *RWMutex) Lock() {
@@ -94,7 +95,7 @@ func (m *RWMutex) traceEndAwaitLock(threshold Threshold) {
 		// check for no overflow
 		took = ts - start
 	}
-	if took >= uint64(threshold) {
+	if took >= uint64(threshold) && !m.DisableViolationLog {
 		logViolation(Id(m.id), threshold, Actual(took), Now(ts), ViolationLock)
 	}
 }
@@ -114,7 +115,7 @@ func (m *RWMutex) traceEndAwaitUnlock(threshold Threshold) {
 		took = ts - lockObtained
 	}
 
-	if took >= uint64(threshold) && lockObtained > 0 {
+	if took >= uint64(threshold) && lockObtained > 0 && !m.DisableViolationLog {
 		// lockObtained = 0 when the tracer is enabled half way
 		logViolation(Id(m.id), threshold, Actual(took), Now(ts), ViolationCritical)
 	}

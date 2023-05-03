@@ -1,9 +1,12 @@
 package muxtracer
 
-import "time"
+import (
+	"time"
+)
 
 type Opts struct {
-	Threshold time.Duration
-	Enabled   bool
-	Id        string // use with
+	Threshold           time.Duration
+	Enabled             bool
+	Id                  string // use with
+	DisableViolationLog bool
 }
